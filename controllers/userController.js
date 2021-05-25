@@ -144,3 +144,32 @@ exports.passwordReset = async (req, res, next) => {
 
   generateJwt(user, 200, res);
 };
+
+exports.protectRoutes = async (req, res, next) => {
+  let token;
+  if (
+    req.headers["authorization"] &&
+    req.headers["authorization"].startsWith("Bearer")
+  ) {
+    token = req.headers["authorization"].split(" ")[1];
+  } else if (req.cookies.jwt) {
+    //here we check the cookies
+    token = req.cookies.jwt;
+  }
+
+  if (!token) {
+    return next(
+      new AppError("You are not logged in please login to get access", 401)
+    );
+  }
+
+  let data = jwt.verify(token, process.env.JWT_SECRET);
+
+  let user = await User.findById(data._id);
+  if (!user) {
+    return next(new AppError("There is no user related to this token ", 401));
+  }
+
+  req.user = user;
+  next();
+};
