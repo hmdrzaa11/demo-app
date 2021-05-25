@@ -2,6 +2,7 @@ let User = require("../models/User");
 let generateJwt = require("../utils/generateJwt");
 let sendEmail = require("../utils/sendEmail");
 let crypto = require("crypto");
+let jwt = require("jsonwebtoken");
 
 exports.signUpUsers = async (req, res) => {
   try {
@@ -156,18 +157,21 @@ exports.protectRoutes = async (req, res, next) => {
     //here we check the cookies
     token = req.cookies.jwt;
   }
-
   if (!token) {
-    return next(
-      new AppError("You are not logged in please login to get access", 401)
-    );
+    return res.status(401).json({
+      status: "failed",
+      error: "You are not logged in please login to get access",
+    });
   }
 
   let data = jwt.verify(token, process.env.JWT_SECRET);
 
   let user = await User.findById(data._id);
   if (!user) {
-    return next(new AppError("There is no user related to this token ", 401));
+    return res.status(401).json({
+      status: "failed",
+      error: "There is no user related to this token",
+    });
   }
 
   req.user = user;

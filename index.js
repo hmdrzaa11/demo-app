@@ -1,7 +1,11 @@
 let express = require("express");
 require("dotenv").config({ path: ".env" });
 let mongoose = require("mongoose");
+let cookieParser = require("cookie-parser");
+let path = require("path");
+
 let userRouter = require("./routes/userRoutes");
+let postRouter = require("./routes/postRoutes");
 
 /*Database Connection */
 let app = express();
@@ -22,11 +26,12 @@ mongoose
 //Middleware
 
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.static(path.join("public")));
 
 /*API */
-
-//users
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/posts", postRouter);
 
 let PORT = process.env.PORT || 3000;
 
