@@ -11,4 +11,11 @@ router.post(
 
 router.get("/", postController.getAllPosts);
 
+router.patch(
+  "/:postId",
+  protectRoutes,
+  postController.upload,
+  postController.editPost
+);
+
 module.exports = router;

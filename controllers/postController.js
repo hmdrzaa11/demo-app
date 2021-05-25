@@ -1,6 +1,7 @@
 let Post = require("../models/Post");
 let multer = require("multer");
 let path = require("path");
+let deletePic = require("../utils/deletePhots");
 
 let multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -60,4 +61,42 @@ exports.getAllPosts = async (req, res) => {
     result: posts.length,
     posts,
   });
+};
+
+exports.editPost = async (req, res) => {
+  try {
+    let post = await Post.findOne({
+      _id: req.params.postId,
+      author: req.user._id,
+    });
+
+    if (!post) {
+      return res.status(404).json({
+        status: "failed",
+        error: "post not found",
+      });
+    }
+
+    let body = { ...req.body };
+    if (req.file) {
+      let oldFilename = post.image;
+      body.image = req.file.filename;
+      await deletePic(oldFilename);
+    }
+
+    let updatedPost = await Post.findByIdAndUpdate(post._id, body, {
+      runValidators: true,
+      new: true,
+    });
+
+    res.json({
+      status: "success",
+      post: updatedPost,
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: "failed",
+      error: err,
+    });
+  }
 };
