@@ -2,6 +2,7 @@ let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
 let validator = require("validator");
 let bcrypt = require("bcryptjs");
+let crypto = require("crypto");
 
 let userSchema = new Schema({
   name: {
@@ -48,6 +49,8 @@ let userSchema = new Schema({
       message: "'password' and 'passwordConfirm' do not match!",
     },
   },
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 //hash the password
@@ -65,6 +68,24 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.isPasswordMatch = async function (rawPassword) {
   return await bcrypt.compare(rawPassword.toString(), this.password);
+};
+
+//generate password reset token
+
+userSchema.methods.generatePasswordToken = async function () {
+  let token = await crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+  //only for 10 min
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+  //save the user
+
+  await this.save({ validateBeforeSave: false });
+
+  return token;
 };
 
 let User = mongoose.model("User", userSchema);
