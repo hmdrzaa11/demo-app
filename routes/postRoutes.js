@@ -18,4 +18,6 @@ router.patch(
   postController.editPost
 );
 
+router.delete("/:postId", protectRoutes, postController.deletePost);
+
 module.exports = router;

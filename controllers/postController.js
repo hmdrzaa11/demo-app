@@ -100,3 +100,29 @@ exports.editPost = async (req, res) => {
     });
   }
 };
+
+exports.deletePost = async (req, res) => {
+  try {
+    let post = await Post.findOneAndDelete({
+      _id: req.params.postId,
+      author: req.user._id,
+    });
+    if (!post) {
+      return res.status(404).json({
+        status: "failed",
+        error: "post not found",
+      });
+    }
+
+    await deletePic(post.image);
+
+    res.status(204).json({
+      status: "success",
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: "failed",
+      error: err,
+    });
+  }
+};
