@@ -83,7 +83,6 @@ exports.forgotPassword = async (req, res) => {
     )}/api/v1/users/reset-password/${resetToken}`;
     let message = `Forgot your password send a PATCH request to ${resetUrl} \n and send Password and PasswordConfirm\n if did not forget your password ignore this`;
     try {
-      //because if any error happens we need to remove the password token and expire dat and save the user
       await sendEmail({
         email: user.email,
 
