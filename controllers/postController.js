@@ -48,3 +48,16 @@ exports.createPost = async (req, res) => {
     });
   }
 };
+
+exports.getAllPosts = async (req, res) => {
+  let posts = await Post.find().populate({
+    path: "author",
+    select: "name lastName email",
+  });
+
+  res.json({
+    status: "success",
+    result: posts.length,
+    posts,
+  });
+};
