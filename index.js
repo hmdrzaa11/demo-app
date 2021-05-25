@@ -1,8 +1,10 @@
 let express = require("express");
 require("dotenv").config({ path: ".env" });
 let mongoose = require("mongoose");
+let userRouter = require("./routes/userRoutes");
 
 /*Database Connection */
+let app = express();
 
 mongoose
   .connect(process.env.MONGODB_URI, {
@@ -17,9 +19,14 @@ mongoose
     process.exit(1);
   });
 
-let app = express();
+//Middleware
 
-/*API  */
+app.use(express.json());
+
+/*API */
+
+//users
+app.use("/api/v1/users", userRouter);
 
 let PORT = process.env.PORT || 3000;
 
