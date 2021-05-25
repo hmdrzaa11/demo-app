@@ -2,6 +2,9 @@ let jwt = require("jsonwebtoken");
 
 let createSendToken = (user, statusCode, res) => {
   user.password = undefined;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
   let token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES,
   });

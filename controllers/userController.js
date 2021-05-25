@@ -1,6 +1,7 @@
 let User = require("../models/User");
 let generateJwt = require("../utils/generateJwt");
 let sendEmail = require("../utils/sendEmail");
+let crypto = require("crypto");
 
 exports.signUpUsers = async (req, res) => {
   try {
@@ -113,4 +114,33 @@ exports.forgotPassword = async (req, res) => {
       error,
     });
   }
+};
+
+exports.passwordReset = async (req, res, next) => {
+  let token = req.params.token;
+  let { password, passwordConfirm } = req.body;
+  let hash = crypto.createHash("sha256").update(token).digest("hex");
+
+  let user = await User.findOne({
+    passwordResetToken: hash,
+    passwordResetExpires: { $gte: new Date() },
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      status: "failed",
+      error: "token is expired please try again",
+    });
+  }
+
+  //here we set the new password
+  user.password = password;
+  user.passwordConfirm = passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  // login the user again
+
+  generateJwt(user, 200, res);
 };

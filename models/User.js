@@ -74,17 +74,14 @@ userSchema.methods.isPasswordMatch = async function (rawPassword) {
 
 userSchema.methods.generatePasswordToken = async function () {
   let token = await crypto.randomBytes(32).toString("hex");
-  this.passwordResetToken = crypto
-    .createHash("sha256")
-    .update(token)
-    .digest("hex");
+  let hash = crypto.createHash("sha256").update(token).digest("hex");
   //only for 10 min
+
+  this.passwordResetToken = hash;
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
 
   //save the user
-
   await this.save({ validateBeforeSave: false });
-
   return token;
 };
 
